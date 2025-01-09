@@ -1,0 +1,6 @@
+@FamilyNewsletters.Server_HostAddress = http://localhost:5273
+
+GET {{FamilyNewsletters.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
