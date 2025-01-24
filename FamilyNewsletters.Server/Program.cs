@@ -1,3 +1,6 @@
+using FamilyNewsletters.Data.Entities;
+using FamilyNewsletters.Logic;
+using Microsoft.EntityFrameworkCore;
 
 namespace FamilyNewsletters.Server
 {
@@ -8,6 +11,14 @@ namespace FamilyNewsletters.Server
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+
+            builder.Services.AddTransient<IContactService, ContactService>();
+
+            //*********************** Register DbContext and provide ConnectionString .***********************
+            builder.Services.AddDbContext<ContactDbContext>(db => db.UseSqlite(builder.Configuration.GetConnectionString("FamilyNewsletterConnectionString")), ServiceLifetime.Singleton);
+            //*********************** Register DbContext end.***********************
+
+            builder.Services.AddAutoMapper(typeof(ContactDbContext));
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

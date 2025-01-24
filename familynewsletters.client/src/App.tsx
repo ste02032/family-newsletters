@@ -1,5 +1,13 @@
 import { useEffect, useState } from 'react';
 import './App.css';
+import Navbar from './Components/Navbar';
+import Authentication from './Components/Authentication';
+import { Route, Routes } from 'react-router-dom';
+import Contacts from './Components/Contacts';
+import Families from './Components/Families';
+import NewsletterDefinitionList from './Components/NewsletterDefinitionList';
+import SystemSettings from './Components/SystemSettings';
+import Newsletters from './Components/Newsletters';
 
 interface Forecast {
     date: string;
@@ -40,8 +48,18 @@ function App() {
 
     return (
         <div>
-            <h1 id="tableLabel">Weather forecast</h1>
-            <p>This component demonstrates fetching data from the server.</p>
+            <Navbar />
+            <Authentication />
+            <div>
+                <Routes>
+                    <Route path="/" element={<App />} />
+                    <Route path="/contacts" element={<Contacts />} />
+                    <Route path="/families" element={<Families />} />
+                    <Route path="/newsletter-definitions" element={<NewsletterDefinitionList />} />
+                    <Route path="/system-settings" element={<SystemSettings />} />
+                    <Route path="/newsletters" element={<Newsletters />} />
+                </Routes>
+            </div>
             {contents}
         </div>
     );
