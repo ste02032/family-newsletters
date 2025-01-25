@@ -10,27 +10,33 @@ type Inputs = {
     isAdministrator: boolean
 }
 
-function EditContact() {
+function EditContact({ setEditShown }) {
     const {
         register,
         handleSubmit,
         watch,
         formState: { errors },
     } = useForm<Inputs>()
+
     const onSubmit: SubmitHandler<Inputs> = (data) => {
         console.log(data)
 
-        fetch("https://localhost:7014/contact", {
+        fetch("https://localhost:7014/Contact", {
             method: 'POST',
             headers: {
-                // DON'T overwrite Content-Type header
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(data)
         }).then(result => result.json()).then(
             (result) => {
                 console.log(result);
+                setEditShown(false);
             }
         );
+    }
+
+    const onCancel = () => {
+        setEditShown(false);
     }
 
     const [isContributor, isRecipient, isAdministrator] = watch(["isContributor", "isRecipient", "isAdministrator"])
@@ -78,7 +84,7 @@ function EditContact() {
                 </div>
                 <div className="md:w-2/3">
                     <input className="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
-                        type="datetime" placeholder="Birthday" {...register("birthday")} />
+                        type="date" placeholder="Birthday" {...register("birthday")} />
                 </div>
             </div>
 
@@ -110,6 +116,7 @@ function EditContact() {
                 <div className="md:w-1/3"></div>
                 <div className="md:w-2/3">
                     <input className="shadow bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded" type="submit" />
+                    <a href="#" onClick={onCancel} className="pl-4">Cancel</a>
                 </div>
             </div>
         </form>
