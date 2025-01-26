@@ -1,58 +1,68 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import EditContact from "./EditContact";
+import { getRequest, deleteRequest } from "../hooks/useRequest";
+import LoadingIndicator from "./LoadingIndicator";
+import loadingStatus from "../helpers/LoadingStatus";
+import { Contact } from "../Types/Contacts";
 
-const TABLE_HEAD = ["First", "Last", "Email", "Birthday"];
-
-const TABLE_ROWS = [
-    {
-        first: "John Michael",
-        last: "Manager",
-        email: "test@test.com",
-        birthday: "23/04/18",
-    },
-    {
-        first: "Alexa Liras",
-        last: "Developer",
-        email: "test@test.com",
-        birthday: "23/04/18",
-    },
-    {
-        first: "Laurent Perrier",
-        last: "Executive",
-        email: "test@test.com",
-        birthday: "19/09/17",
-    },
-    {
-        first: "Michael Levi",
-        last: "Developer",
-        email: "test@test.com",
-        birthday: "24/12/08",
-    },
-    {
-        first: "Richard Gran",
-        last: "Manager",
-        email: "test@test.com",
-        birthday: "04/10/21",
-    },
-];
+const TABLE_HEAD = ["First", "Last", "Email", "Birthday", "Admin", "Contributor", "Recipient", "", ""];
 
 function Contacts() {
     const [editShown, setEditShown] = useState(false);
 
-    const handleEditClick = () => {
+    const handleEditClick = (contact: Contact) => {
+        setContact(contact);
         setEditShown(true);
     };
+
+    const handleDeleteClick = (id: number) => {
+        
+        const deleteContact = async () => {
+            await deleteReq(id);
+            const contactsResult = await get();
+            setContacts(contactsResult);
+        };
+
+        deleteContact();
+    };
+
+    const [contacts, setContacts] = useState<Contact[]>([]);
+    const [contact, setContact] = useState<Contact>();
+    const { get, loadingState } = getRequest("/contact");
+    const { deleteReq } = deleteRequest("/contact");
+
+    useEffect(() => {
+        const fetchContacts = async () => {
+            const contactsResult = await get();
+            setContacts(contactsResult);
+        };
+        fetchContacts();
+    }, [get]);
+
+    const formatDate = (date: Date): string => {
+        if (date) {
+            const dateObj = new Date(date);
+            const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+            const day = dateObj.getDate().toString().padStart(2, '0');
+            const year = dateObj.getFullYear().toString();
+            return `${month}/${day}/${year}`;
+        }
+        else return "";
+    };
+
+    if (loadingState !== loadingStatus.loaded)
+        return <LoadingIndicator loadingState={loadingState} />
 
     return (
         <>
             {editShown ? (
-                <EditContact setEditShown={setEditShown} />
+                <EditContact setEditShown={setEditShown} contact={contact!} setContacts={setContacts} contacts={contacts} />
             ) : (
                 <div>
                     <div>
-                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={handleEditClick}>Add</button>
+                            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={() => handleEditClick({isActive: true} as Contact)}>Add</button>
                     </div>
-                    <div className="h-full w-full overflow-scroll">
+                    <div className="h-full w-full">
                         <table className="w-full min-w-max table-auto text-left">
                             <thead>
                               <tr>
@@ -69,42 +79,59 @@ function Contacts() {
                               </tr>
                             </thead>
                                 <tbody>
-                                    {TABLE_ROWS.map(({ first, last, email, birthday }, index) => {
-                                        const isLast = index === TABLE_ROWS.length - 1;
+                                    {contacts.map((contactRecord, index) => {
+                                        const isLast = index === contacts.length - 1;
                                         const classes = isLast ? "p-4" : "p-4 border-b border-blue-gray-50";
 
                                         return (
-                                            <tr key={name} className="even:bg-blue-gray-50/50">
+                                            <tr key={contactRecord.id} className="even:bg-blue-gray-50/50">
                                                 <td className={classes}>
                                                     <span className="font-normal"
                                                     >
-                                                        {first}
+                                                        {contactRecord.firstName}
                                                     </span>
                                                 </td>
                                                 <td className={classes}>
                                                     <span className="font-normal"
                                                     >
-                                                        {last}
+                                                        {contactRecord.lastName}
                                                     </span>
                                                 </td>
                                                 <td className={classes}>
                                                     <span className="font-normal"
                                                     >
-                                                        {email}
+                                                        {contactRecord.emailAddress}
                                                     </span>
                                                 </td>
                                                 <td className={classes}>
                                                     <span className="font-normal"
                                                     >
-                                                        {birthday}
+                                                        {formatDate(contactRecord.birthday)}
                                                     </span>
+                                                </td>
+                                                <td className={classes}>
+                                                    <input type="checkbox" disabled checked={contactRecord.administrator} />
+                                                </td>
+                                                <td className={classes}>
+                                                    <input type="checkbox" disabled checked={contactRecord.isContributor} />
+                                                </td>
+                                                <td className={classes}>
+                                                    <input type="checkbox" disabled checked={contactRecord.isRecipient} />
                                                 </td>
                                                 <td className={classes}>
                                                     <a
                                                         href="#"
-                                                        className="font-medium"
+                                                        className="font-medium" onClick={() => handleEditClick(contactRecord)}
                                                     >
                                                         Edit
+                                                    </a>
+                                                </td>
+                                                <td className={classes}>
+                                                    <a
+                                                        href="#"
+                                                        className="font-medium" onClick={() => handleDeleteClick(contactRecord.id)}
+                                                    >
+                                                        Delete
                                                     </a>
                                                 </td>
                                             </tr>

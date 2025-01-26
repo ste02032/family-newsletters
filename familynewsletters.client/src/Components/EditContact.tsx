@@ -1,4 +1,6 @@
 import { useForm, SubmitHandler } from "react-hook-form"
+import { Contact } from "../Types/Contacts";
+import { postRequest, putRequest } from "../hooks/useRequest";
 
 type Inputs = {
     firstName: string
@@ -7,10 +9,17 @@ type Inputs = {
     birthday: Date
     isContributor: boolean
     isRecipient: boolean
-    isAdministrator: boolean
+    administrator: boolean
 }
 
-function EditContact({ setEditShown }) {
+interface EditContactProps {
+    setEditShown: (editShown: boolean) => void
+    setContacts: (setContacts: Contact[]) => void
+    contact: Contact
+    contacts: Contact[]
+}
+
+function EditContact({ setEditShown, contact, setContacts, contacts }: EditContactProps) {
     const {
         register,
         handleSubmit,
@@ -18,28 +27,64 @@ function EditContact({ setEditShown }) {
         formState: { errors },
     } = useForm<Inputs>()
 
+    const { post } = postRequest("/contact");
+    const { put } = putRequest("/contact");
+
     const onSubmit: SubmitHandler<Inputs> = (data) => {
         console.log(data)
 
-        fetch("https://localhost:7014/Contact", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        }).then(result => result.json()).then(
-            (result) => {
+        if (contact.id > 0) {
+            console.log(contact);
+            const updateContact = async () => {
+                const result = await put(contact.id, data) as Contact;
                 console.log(result);
+                contacts.forEach(item => {
+                    if (item.id === contact.id) {
+                        item = result;
+                        console.log("replacing item in contacts");
+                    }
+                });
+                setContacts(contacts);
                 setEditShown(false);
-            }
-        );
+            };
+            updateContact();
+        }
+        else {
+            const addContact = async () => {
+                const result = await post(data) as Contact;
+                console.log(result);
+                setContacts([
+                    ...contacts,
+                    {
+                        id: result.id,
+                        firstName: result.firstName,
+                        lastName: result.lastName,
+                        birthday: result.birthday,
+                        isContributor: result.isContributor,
+                        isRecipient: result.isRecipient,
+                        administrator: result.administrator,
+                        emailAddress: result.emailAddress,
+                        isActive: result.isActive
+                    },
+                ]);
+                setEditShown(false);
+            };
+            addContact();
+        }
     }
 
     const onCancel = () => {
         setEditShown(false);
     }
 
-    const [isContributor, isRecipient, isAdministrator] = watch(["isContributor", "isRecipient", "isAdministrator"])
+    const formatDate = (date: Date): string => {
+        if (date) {
+            return new Date(date).toISOString().substring(0, 10);
+        }
+        else return "";
+    };
+
+    const [isContributor, isRecipient, administrator] = watch(["isContributor", "isRecipient", "administrator"])
 
     return (
         /* "handleSubmit" will validate your inputs before invoking "onSubmit" */
@@ -51,7 +96,7 @@ function EditContact({ setEditShown }) {
                 </div>
                 <div className="md:w-2/3">
                     <input className="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
-                        defaultValue="" {...register("firstName", { required: true, maxLength: 100 })} />
+                        defaultValue={contact?.firstName} {...register("firstName", { required: true, maxLength: 100 })} />
                     {errors.firstName && <span className="text-red-500">*</span>}
                 </div>
             </div>
@@ -62,7 +107,7 @@ function EditContact({ setEditShown }) {
                 </div>
                 <div className="md:w-2/3">
                     <input className="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
-                        {...register("lastName", { required: true, maxLength: 100 })} />
+                        defaultValue={contact?.lastName} {...register("lastName", { required: true, maxLength: 100 })} />
                     {errors.lastName && <span className="text-red-500">*</span>}
                 </div>
             </div>
@@ -73,7 +118,7 @@ function EditContact({ setEditShown }) {
                 </div>
                 <div className="md:w-2/3">
                     <input className="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
-                        {...register("emailAddress", { required: isContributor || isRecipient || isAdministrator ? true : false, maxLength: 150 })} />
+                        defaultValue={contact.emailAddress} {...register("emailAddress", { required: isContributor || isRecipient || administrator ? true : false, maxLength: 150 })} />
                     {errors.emailAddress && <span className="text-red-500">*</span>}
                 </div>
             </div>
@@ -84,14 +129,14 @@ function EditContact({ setEditShown }) {
                 </div>
                 <div className="md:w-2/3">
                     <input className="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
-                        type="date" placeholder="Birthday" {...register("birthday")} />
+                        defaultValue={formatDate(contact.birthday)} type="date" placeholder="Birthday" {...register("birthday")} />
                 </div>
             </div>
 
             <div className="md:flex md:items-center mb-6">
                 <div className="md:w-1/3"></div>
                 <label className="md:w-2/3 block text-gray-500 font-bold" htmlFor="isContributor">
-                    <input className="mr-2 leading-tight" type="checkbox" placeholder="Is Contributor" {...register("isContributor")} />
+                    <input className="mr-2 leading-tight" type="checkbox" placeholder="Is Contributor" defaultChecked={contact.isContributor} {...register("isContributor")} />
                     <span className="text-sm">Is Contributor</span>
                 </label>
             </div>
@@ -99,7 +144,7 @@ function EditContact({ setEditShown }) {
             <div className="md:flex md:items-center mb-6">
                 <div className="md:w-1/3"></div>
                 <label className="md:w-2/3 block text-gray-500 font-bold" htmlFor="isRecipient">
-                    <input className="mr-2 leading-tight" type="checkbox" placeholder="Is Recipient" {...register("isRecipient")} />
+                    <input className="mr-2 leading-tight" type="checkbox" placeholder="Is Recipient" defaultChecked={contact.isRecipient} {...register("isRecipient")} />
                     <span className="text-sm">Is Recipient</span>
                 </label>
             </div>
@@ -107,11 +152,10 @@ function EditContact({ setEditShown }) {
             <div className="md:flex md:items-center mb-6">
                 <div className="md:w-1/3"></div>
                 <label className="md:w-2/3 block text-gray-500 font-bold" htmlFor="isAdministrator">
-                    <input className="mr-2 leading-tight" type="checkbox" placeholder="Is Administrator" {...register("isAdministrator")} />
+                    <input className="mr-2 leading-tight" type="checkbox" placeholder="Is Administrator" defaultChecked={contact.administrator} {...register("administrator")} />
                     <span className="text-sm">Is Administrator</span>
                 </label>
             </div>
-
             <div className="md:flex md:items-center">
                 <div className="md:w-1/3"></div>
                 <div className="md:w-2/3">
