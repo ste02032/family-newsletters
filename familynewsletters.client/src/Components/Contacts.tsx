@@ -7,6 +7,14 @@ import { Contact } from "../Types/Contacts";
 
 const TABLE_HEAD = ["First", "Last", "Email", "Birthday", "Admin", "Contributor", "Recipient", ""];
 
+function useConfirm(message: string, onConfirm: (id: number) => void) {
+    const confirm = (id: number) => {
+        if (window.confirm(message))
+            onConfirm(id);
+    }
+    return confirm
+}
+
 function Contacts() {
     const [editShown, setEditShown] = useState(false);
 
@@ -25,6 +33,11 @@ function Contacts() {
 
         deleteContact();
     };
+
+    const confirmDelete = useConfirm(
+        'Are you sure you want to delete this record?',
+        handleDeleteClick
+    );
 
     const [contacts, setContacts] = useState<Contact[]>([]);
     const [contact, setContact] = useState<Contact>();
@@ -127,7 +140,7 @@ function Contacts() {
                                                     </a>
                                                     <a
                                                         href="#"
-                                                        className="font-medium" onClick={() => handleDeleteClick(contactRecord.id)}
+                                                        className="font-medium" onClick={() => confirmDelete(contactRecord.id)}
                                                     >
                                                         Delete
                                                     </a>
