@@ -3,3 +3,6 @@
 .vs/*
 /familynewsletters.client/node_modules
 *.user
+*.db
+*.db*
+.env.local
