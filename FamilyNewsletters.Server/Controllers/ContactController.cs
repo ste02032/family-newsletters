@@ -43,9 +43,7 @@ namespace FamilyNewsletters.Server.Controllers
                 return BadRequest();
             }
 
-            contact = await _contactService.Add(contact);
-
-            return Ok(contact);
+            return Ok(await _contactService.Add(contact));
         }
 
         [HttpPut]
@@ -57,13 +55,13 @@ namespace FamilyNewsletters.Server.Controllers
                 return BadRequest();
             }
 
-            contact = await _contactService.Update(id, contact);
-            if (contact == null)
+            var contactUpdated = await _contactService.Update(id, contact);
+            if (contactUpdated == null)
             {
                 return NotFound();
             }
 
-            return Ok(contact);
+            return Ok(contactUpdated);
         }
 
         [HttpDelete]

@@ -5,7 +5,7 @@ import LoadingIndicator from "./LoadingIndicator";
 import loadingStatus from "../helpers/LoadingStatus";
 import { Contact } from "../Types/Contacts";
 
-const TABLE_HEAD = ["First", "Last", "Email", "Birthday", "Admin", "Contributor", "Recipient", "", ""];
+const TABLE_HEAD = ["First", "Last", "Email", "Birthday", "Admin", "Contributor", "Recipient", ""];
 
 function Contacts() {
     const [editShown, setEditShown] = useState(false);
@@ -19,7 +19,7 @@ function Contacts() {
         
         const deleteContact = async () => {
             await deleteReq(id);
-            const contactsResult = await get();
+            const contactsResult = await get({});
             setContacts(contactsResult);
         };
 
@@ -33,7 +33,7 @@ function Contacts() {
 
     useEffect(() => {
         const fetchContacts = async () => {
-            const contactsResult = await get();
+            const contactsResult = await get({});
             setContacts(contactsResult);
         };
         fetchContacts();
@@ -60,7 +60,7 @@ function Contacts() {
             ) : (
                 <div>
                     <div>
-                            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={() => handleEditClick({isActive: true} as Contact)}>Add</button>
+                            <button className="bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded" onClick={() => handleEditClick({isActive: true} as Contact)}>Add</button>
                     </div>
                     <div className="h-full w-full">
                         <table className="w-full min-w-max table-auto text-left">
@@ -121,12 +121,10 @@ function Contacts() {
                                                 <td className={classes}>
                                                     <a
                                                         href="#"
-                                                        className="font-medium" onClick={() => handleEditClick(contactRecord)}
+                                                        className="font-medium pr-4" onClick={() => handleEditClick(contactRecord)}
                                                     >
                                                         Edit
                                                     </a>
-                                                </td>
-                                                <td className={classes}>
                                                     <a
                                                         href="#"
                                                         className="font-medium" onClick={() => handleDeleteClick(contactRecord.id)}

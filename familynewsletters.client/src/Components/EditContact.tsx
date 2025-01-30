@@ -38,12 +38,12 @@ function EditContact({ setEditShown, contact, setContacts, contacts }: EditConta
             const updateContact = async () => {
                 const result = await put(contact.id, data) as Contact;
                 console.log(result);
-                contacts.forEach(item => {
-                    if (item.id === contact.id) {
-                        item = result;
+                for (let i = 0; i < contacts.length; i++) {
+                    if (contacts[i].id === result.id) {
+                        contacts[i] = result;
                         console.log("replacing item in contacts");
                     }
-                });
+                }
                 setContacts(contacts);
                 setEditShown(false);
             };

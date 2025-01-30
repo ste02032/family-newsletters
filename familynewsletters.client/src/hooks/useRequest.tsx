@@ -6,10 +6,13 @@ const BaseUrl = "https://localhost:7014";
 const useGetRequest = (url: string) => {
     const [loadingState, setLoadingState] = useState(loadingStatus.isLoading);
 
-    const get = useCallback(async () => {
+    const get = useCallback(async (headers: HeadersInit) => {
         setLoadingState(loadingStatus.isLoading);
         try {
-            const rsp = await fetch(BaseUrl + url);
+            const rsp = await fetch(BaseUrl + url, {
+                method: 'GET',
+                headers: headers
+            });
 
             if (!rsp.ok) {
                 throw new Error('Network response was not ok');

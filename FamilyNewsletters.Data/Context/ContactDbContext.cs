@@ -1,8 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using FamilyNewsletters.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 using System.Reflection.Metadata;
 using System.Security.Cryptography.X509Certificates;
 
-namespace FamilyNewsletters.Data.Entities
+namespace FamilyNewsletters.Data.Context
 {
     public class ContactDbContext : DbContext
     {
